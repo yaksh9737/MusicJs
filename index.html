@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Beat Machine</title>
+    <style>
+      body {
+        background: #191919;
+        color: #f2ad43;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        font-family: monospace;
+        padding: 20px;
+      }
+
+      h1,
+      h3 {
+        margin: 0;
+      }
+
+      button {
+        padding: 12px 24px;
+        background: #f2ad43;
+        color: #191919;
+        border: none;
+        border-radius: 6px;
+        font-size: 1rem;
+        cursor: pointer;
+        margin-top: 20px;
+      }
+
+      .volume-section {
+        margin-top: 40px;
+        width: 300px;
+      }
+
+      .volume-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+      }
+
+      .volume-row label {
+        flex: 1;
+      }
+
+      .volume-row input[type="range"] {
+        flex: 2;
+        margin-left: 10px;
+      }
+
+      .btn-row {
+        margin-top: 30px;
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>🟡 JS Beat Looper</h1>
+    <button id="startBtn">▶️ Start Beat</button>
+    <button id="stopBtn">⛔ Stop Beat</button>
+
+    <div class="btn-row">
+      <button id="playKick">🎯 Kick</button>
+      <button id="playSnare">🥁 Snare</button>
+      <button id="playHat">🔔 Hat</button>
+    </div>
+
+    <div class="volume-section">
+      <h3>🎚 Volume Controls</h3>
+
+      <div class="volume-row">
+        <label for="volMaster">Master</label>
+        <input type="range" min="-60" max="0" value="-6" id="volMaster" />
+      </div>
+
+      <div class="volume-row">
+        <label for="volKick">Kick</label>
+        <input type="range" min="-60" max="0" value="-6" id="volKick" />
+      </div>
+
+      <div class="volume-row">
+        <label for="volSnare">Snare</label>
+        <input type="range" min="-60" max="0" value="-6" id="volSnare" />
+      </div>
+
+      <div class="volume-row">
+        <label for="volHat">Hat</label>
+        <input type="range" min="-60" max="0" value="-8" id="volHat" />
+      </div>
+
+      <div class="volume-row">
+        <label for="volMelody">Melody</label>
+        <input type="range" min="-60" max="0" value="-10" id="volMelody" />
+      </div>
+    </div>
+
+    <script type="module">
+      import * as Tone from "https://cdn.skypack.dev/tone";
+
+      console.log("🔥 Virtual Studio Loaded");
+
+      Tone.Transport.bpm.value = 120; // Slow + atmospheric
+
+      const masterVol = new Tone.Volume(-6).toDestination();
+
+      const kickVol = new Tone.Volume(-6).connect(masterVol);
+      const kick = new Tone.MembraneSynth().connect(kickVol);
+
+      const snareVol = new Tone.Volume(-6).connect(masterVol);
+      const snare = new Tone.NoiseSynth().connect(snareVol);
+
+      const hatVol = new Tone.Volume(-8).connect(masterVol);
+      const hat = new Tone.MetalSynth().connect(hatVol);
+
+      const melodyVol = new Tone.Volume(-10).connect(masterVol);
+      const melody = new Tone.PolySynth(Tone.Synth).connect(melodyVol);
+
+      let index = 0;
+
+      const beat = [
+        ["kick"],
+        ["hat"],
+        ["snare"],
+        [],
+        ["kick", "hat"],
+        ["hat"],
+        ["snare"],
+        [],
+        ["kick"],
+        [],
+        ["hat"],
+        [],
+        ["kick", "snare"],
+        [],
+        ["hat"],
+        [],
+      ];
+
+      const notes = [
+        ["G#3", "C#4", "D#4"],
+        null,
+        null,
+        null,
+        ["F#3", "B3", "D#4"],
+        null,
+        null,
+        null,
+        ["E3", "A3", "C#4"],
+        null,
+        null,
+        null,
+        ["C#4", "G#3"],
+        null,
+        null,
+        null,
+      ];
+
+      Tone.Transport.scheduleRepeat((time) => {
+        const step = index % beat.length;
+        const sounds = beat[step];
+        const chord = notes[step];
+
+        if (sounds.includes("kick"))
+          kick.triggerAttackRelease("C1", "8n", time);
+        if (sounds.includes("snare")) snare.triggerAttackRelease("8n", time);
+        if (sounds.includes("hat")) hat.triggerAttackRelease("32n", time);
+
+        if (chord) melody.triggerAttackRelease(chord, "2n", time);
+
+        console.log(
+          `🎧 STEP ${index}: [${sounds.join(", ")}] CHORD: ${chord || "-"}`
+        );
+        index++;
+      }, "8n");
+
+      // Controls
+      document
+        .getElementById("startBtn")
+        .addEventListener("click", async () => {
+          await Tone.start();
+          console.log("🎵 Playing Beat...");
+          index = 0;
+          Tone.Transport.start();
+        });
+
+      document.getElementById("stopBtn").addEventListener("click", () => {
+        console.log("⛔️ Stopped");
+        Tone.Transport.stop();
+      });
+
+      document.getElementById("playKick").addEventListener("click", () => {
+        kick.triggerAttackRelease("C1", "8n");
+      });
+
+      document.getElementById("playSnare").addEventListener("click", () => {
+        snare.triggerAttackRelease("8n");
+      });
+
+      document.getElementById("playHat").addEventListener("click", () => {
+        hat.triggerAttackRelease("32n");
+      });
+
+      // Volume sliders
+      function db(value) {
+        return parseFloat(value);
+      }
+
+      document.getElementById("volMaster").addEventListener("input", (e) => {
+        masterVol.volume.value = db(e.target.value);
+      });
+      document.getElementById("volKick").addEventListener("input", (e) => {
+        kickVol.volume.value = db(e.target.value);
+      });
+      document.getElementById("volSnare").addEventListener("input", (e) => {
+        snareVol.volume.value = db(e.target.value);
+      });
+      document.getElementById("volHat").addEventListener("input", (e) => {
+        hatVol.volume.value = db(e.target.value);
+      });
+      document.getElementById("volMelody").addEventListener("input", (e) => {
+        melodyVol.volume.value = db(e.target.value);
+      });
+    </script>
+  </body>
+</html>
