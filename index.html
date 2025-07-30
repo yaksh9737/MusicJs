@@ -13,7 +13,7 @@
         justify-content: center;
         height: 100vh;
         font-family: monospace;
-        padding: 20px;
+        padding: 19px;
       }
 
       h1,
@@ -63,7 +63,7 @@
     </style>
   </head>
   <body>
-    <h1>🟡 JS Beat Looper</h1>
+    <h1>JS Beat Looper</h1>
     <button id="startBtn">▶️ Start Beat</button>
     <button id="stopBtn">⛔ Stop Beat</button>
 
@@ -125,6 +125,7 @@
 
       let index = 0;
 
+      // Beat
       const beat = [
         ["kick"],
         ["hat"],
@@ -144,6 +145,7 @@
         [],
       ];
 
+      // Notes
       const notes = [
         ["G#3", "C#4", "D#4"],
         null,
@@ -163,6 +165,7 @@
         null,
       ];
 
+      // Tuning
       Tone.Transport.scheduleRepeat((time) => {
         const step = index % beat.length;
         const sounds = beat[step];
@@ -191,19 +194,20 @@
           Tone.Transport.start();
         });
 
+      // Stop
       document.getElementById("stopBtn").addEventListener("click", () => {
         console.log("⛔️ Stopped");
         Tone.Transport.stop();
       });
-
+      // Kick
       document.getElementById("playKick").addEventListener("click", () => {
         kick.triggerAttackRelease("C1", "8n");
       });
-
+      // Snare
       document.getElementById("playSnare").addEventListener("click", () => {
         snare.triggerAttackRelease("8n");
       });
-
+      // Hat
       document.getElementById("playHat").addEventListener("click", () => {
         hat.triggerAttackRelease("32n");
       });
@@ -212,7 +216,8 @@
       function db(value) {
         return parseFloat(value);
       }
-
+      
+      // Input
       document.getElementById("volMaster").addEventListener("input", (e) => {
         masterVol.volume.value = db(e.target.value);
       });

@@ -1,4 +1,4 @@
-# JS Beat Looper 🟡🥁
+# JS Beat Looper
 
 A simple, fun, browser-based beat machine and step sequencer built with vanilla JavaScript and the powerful **Tone.js** library. Create and loop beats right in your browser with no installation required.
 
